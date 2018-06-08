@@ -1,0 +1,30 @@
+---
+# 기본으로 모든 port 허용할 security group 생성 (특정 IP에서만)
+
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  vars:
+    sg_tag_Name: Kinesis
+    office_ip: "211.34.57.2/32"               #ex)192.168.0.1/32 #허용할 ip #1
+    home_ip: "119.194.174.2/32"               # "{{ }}" 떼고 IP만 넣을것
+  tasks:
+    - name: create sg
+      ec2_group:
+        region: "{{ region }}"
+        name: "{{ sg_common }}"
+        description: allow office/home ip
+        rules:
+          - proto: tcp
+            ports:
+              - 0-65535
+            cidr_ip: "{{ office_ip }}"
+          - proto: tcp
+            ports:
+              - 0-65535
+            cidr_ip: "{{ home_ip }}"
+        rules_egress:
+          - proto: all
+            cidr_ip: 0.0.0.0/0
+        tags:
+          Name: "{{ sg_tag_Name }}"

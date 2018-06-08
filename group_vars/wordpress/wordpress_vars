@@ -1,0 +1,19 @@
+---
+v_name: wordpress
+service: web
+sg_desc: wordpress security group
+sg_ports: 80
+
+# which version of WP to deploy
+wp_version: 4.9.4
+
+# These are the WordPress database settings
+wp_db_name: wordpress
+wp_db_user: wordpress
+
+# Set your db password here
+wp_db_password: secret
+
+# Wordpress settings
+auto_up_disable: false
+core_update_level: true

@@ -1,0 +1,20 @@
+ansible_ssh_user: centos     #change ssh user
+ansible_ssh_private_key_file: "~/.ssh/{{ key_name }}.pem"  #change to your keyfile
+
+sg_common: common
+region: ap-northeast-1
+
+# aws images
+# CentOS7
+centos7_seoul: ami-7248e81c
+centos7_tokyo: ami-25bd2743
+amx2_tokyo: ami-8fbab2f3
+
+# keypair name
+key_name: kinesis_tokyo
+
+# default vars
+image: "{{ centos7_tokyo }}"
+env: test
+securitykey: "{{ key_name }}"
+count: 1

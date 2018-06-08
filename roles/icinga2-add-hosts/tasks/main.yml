@@ -1,0 +1,4 @@
+---
+# tasks file for icinga2-ansible-add-hosts
+
+- import_tasks: icinga2_add_hosts.yml

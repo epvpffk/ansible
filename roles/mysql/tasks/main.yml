@@ -1,0 +1,27 @@
+---
+- name: install mysql repo
+  yum: name=http://dev.mysql.com/get/mysql-community-release-el7-5.noarch.rpm state=present
+
+- name: install python-pip
+  yum: name=python2-pip state=present
+
+- name: install mysql server
+  yum: name={{ item }} state=present
+  with_items:
+    - mysql-community-server
+    - mysql-devel
+    - mysql-libs
+
+- name: update pip
+  pip: name=pip state=present extra_args=--upgrade
+
+- name: install mysql-python
+  pip: name=MySQL-python state=present
+
+- name: create mysql configuration file
+  template: src=my.cnf.j2 dest=/etc/my.cnf
+  notify: restart mysql
+
+- name: start mysql service
+  service: name=mysqld state=started enabled=true
+

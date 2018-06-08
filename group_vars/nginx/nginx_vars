@@ -1,0 +1,3 @@
+v_name: nginx
+service: web
+desc: nginx security group

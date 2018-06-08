@@ -1,0 +1,46 @@
+---
+#- name: WordPress Downloads & Unarchive
+#  unarchive:
+#    remote_src: true
+#    src: http://wordpress.org/wordpress-{{ wp_version }}.tar.gz
+#    dest: /var/www/html
+#    owner: root
+#    group: root
+
+#- name: copy wordpress to apache root directory
+#  shell: cp -r /var/www/html/wordpress/* /var/www/html
+#  run_once: true
+    
+#- name: remove wordpress origin folder
+#  file: path=/var/www/html/wordpress state=absent
+#  run_once: true
+
+#- name: fetch random salts for wordpress config
+#  command: curl https://api.wordpress.org/secret-key/1.1/salt/
+#  register: "wp_salt"
+#  run_once: true
+
+- name: create wordpress database
+  mysql_db: name={{ db_name }} state=present
+
+- name: create wordpress database user
+  mysql_user: name={{ db_user }} password={{ db_password }} priv={{ db_name }}.*:ALL host='localhost' state=present
+
+#- name: copy wordpress config file
+#  template: src=wp-config.php dest=/var/www/html/
+#  run_once: true
+
+#- name: download theme & unarchive
+#  unarchive:
+#    src: https://downloads.wordpress.org/theme/elvinaa.1.0.3.zip
+#    dest: /var/www/html/wp-content/themes
+#    remote_src: yes
+
+#- name: mod default constant file
+#  blockinfile:
+  #    path: /var/www/html/wp-includes/default-constants.php
+  #  block: 
+    #lineinfile:
+      #  path: /var/www/html/wp-includes/default-constants.php
+      #  regexp: "^define( 'WP_DEFAULT_THEME', "
+      #   line: "define( 'WP_DEFAULT_THEME', 'Elvinaa' );"

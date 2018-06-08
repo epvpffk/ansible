@@ -1,0 +1,44 @@
+---
+# aws security group 생성(22, 80, 443 port all)
+# ec2 생성, centos7, 도쿄 region, count:생성할 인스턴스 갯수
+# new_key.yml, new_sg.yml로 keypair, Security Group:common을 먼저 생성해 줘야 함
+
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  vars_files:
+    - group_vars/icinga2/icinga2_vars
+  roles:
+    - prvsn_inst
+- name: "{{ v_name }}.yml"
+  hosts: "tag_group_{{ v_name }}"
+  become: yes
+  vars_files:
+    - group_vars/icinga2/icinga2_vars
+  roles:
+    - common
+    - icinga2-no-ui
+    - role: icinga2-web-ui
+      icinga2_web_ui_ido: "mysql"
+    - icinga2-web2-ui
+    - role: icinga2-add-hosts
+      configuration_logic: "object"
+      icinga_host_attributes:
+        check_command: "http"
+        vars.sla: "24x7"
+      icinga_host_templates:
+        - icinga/sensors.j2
+      host_checks: |
+        object Service "load_average" {
+          host_name = "{{ hostvars[item]['ansible_fqdn'] }}"
+          check_command = "check_nrpe"
+          vars.nrpe_command = "check_load"
+        }
+
+        object Service "disk" {
+          host_name = "{{ hostvars[item]['ansible_fqdn'] }}"
+          check_command = "check_nrpe"
+          vars.nrpe_command = "check_disk"
+        }
+      tags: add-hosts
+    - icinga2-nrpe-agent

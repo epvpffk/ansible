@@ -1,0 +1,42 @@
+---
+- name: copy daemon.json & k8s.conf
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - { src: 'daemon.json', dest: '/etc/docker/' }
+    - { src: 'k8s.conf', dest: '/etc/sysctl.d/' }
+
+- name: sysctl --system
+  command: sysctl --system
+  notify: docker restart
+
+- name: set k8s repository
+  yum_repository:
+    name: kubernetes
+    description: kubernetes repo
+    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+    enabled: yes
+    gpgcheck: yes
+    gpgkey:
+      - https://packages.cloud.google.com/yum/doc/yum-key.gpg
+      - https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+
+- name: install kubectl, kubelet, kubeadm
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - kubectl
+    - kubeadm
+    - kubelet
+
+- name: block in .bashrc kubectl completion
+  blockinfile:
+    path: ~/.bashrc
+    block: |
+      [[ $PS1 && -f /usr/share/bash-completion/bash_completion ]] && \
+      . /usr/share/bash-completion/bash_completion
+
+- name: kubelet service enabled
+  service: name=kubelet enabled=yes

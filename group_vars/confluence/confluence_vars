@@ -1,0 +1,14 @@
+---
+v_name: confluence
+service: web
+sg_desc: "security group for confluence - 8090
+sg_ports: 8090
+
+
+# These are the WordPress database settings
+db_name: confluence
+db_user: confluence
+
+# Set your db password here
+db_password: fnsl13
+

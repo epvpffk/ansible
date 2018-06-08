@@ -1,0 +1,20 @@
+---
+# aws security group 생성(22, 80, 443 port all)
+# ec2 생성, centos7, 도쿄 region, count:생성할 인스턴스 갯수
+# new_key.yml, new_sg.yml로 keypair, Security Group : common을 먼저 생성해 줘야 함
+
+- name: provisioning ec2 instances
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - group_vars/nginx/nginx_vars
+  roles:
+    - prvsn_inst
+- name: "{{ v_name }}.yml"
+  hosts: "tag_group_{{ v_name }}"
+  become: yes
+  vars_files:
+    - group_vars/nginx/nginx_vars
+  roles:
+    - common
+    - nginx

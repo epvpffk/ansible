@@ -1,0 +1,6 @@
+---
+- name: Instance De-register
+  local_action:
+    module: ec2_elb
+    instance_id: "{{ ansible_ec2_instance_id }}"
+    state: absent

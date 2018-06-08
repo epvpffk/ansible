@@ -1,0 +1,69 @@
+---
+- name: instance provision
+  ec2:
+    region: "ap-northeast-1"
+    key_name: "kinesis_tokyo"
+    instance_type: t2.micro
+    image: "ami-3185744e"
+    wait: yes
+    group:
+      - default
+      - "{{ sg_common }}"
+      - "{{ v_name }}"
+    instance_tags:
+      env: "{{ env }}"
+      deploy: ansible
+      service: "{{ service }}"
+      group: "{{ v_name }}"
+    exact_count: "{{ count }}"
+    count_tag:
+      env: "{{ env }}"
+      group: "{{ v_name }}"
+      service: "{{ service }}"
+    volumes:
+      - device_name: /dev/sda1
+        device_type: gp2
+        volume_size: 10
+        delete_on_termination: yes
+  register: ec2
+- name: set instance tag_Name
+  ec2_tag:
+    resource: "{{ item.id }}"
+    region: "{{ region }}"
+    state: present
+    tags:
+      Name: "{{ v_name }}-{{ item.public_ip }}"
+  with_items: "{{ ec2.instances }}"      
+  when: item.state == "running"
+- name: debugs ec2
+  debug:
+    msg:
+      - "private_ip : {{ item.private_ip }}."
+      - "public_ip : {{ item.public_ip }}."
+      - "state : {{ item.state }}."
+  with_items: "{{ ec2.instances }}"
+- name: Add ec2 instance ip to hosts file
+  add_host:
+    hostname: "{{ item.public_ip }}"
+    groups: "tag_group_{{ v_name }}"
+    inventory_dir: "./hosts"
+  with_items: "{{ ec2.instances }}"
+  ignore_errors: yes
+  when: item.state == "running"
+- name: wait for sshd
+  wait_for:
+    host: "{{ item.public_dns_name }}"
+    port: 22
+    delay: 30
+    timeout: 180
+    state: started
+  with_items: "{{ ec2.instances }}"
+  ignore_errors: yes
+  when: item.state == "running"
+- name: remove security group when server count == 0
+  ec2_group:
+    name: "{{ v_name }}"
+    state: absent
+    region: "{{ region }}"
+  when: count == 0
+  ignore_errors: yes

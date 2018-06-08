@@ -1,0 +1,4 @@
+---
+v_name: icinga2
+service: icinga2
+desc: security group for icinga2

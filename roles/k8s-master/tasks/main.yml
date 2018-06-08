@@ -1,0 +1,82 @@
+---
+- name: copy daemon.json & k8s.conf
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - { src: 'daemon.json', dest: '/etc/docker/' }
+    - { src: 'k8s.conf', dest: '/etc/sysctl.d/' }
+
+- name: sysctl --system
+  command: sysctl --system
+  notify: docker restart
+
+- meta: flush_handlers
+
+- name: set k8s repository
+  yum_repository:
+    name: kubernetes
+    description: kubernetes repo
+    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+    enabled: yes
+    gpgcheck: yes
+    gpgkey:
+      - https://packages.cloud.google.com/yum/doc/yum-key.gpg
+      - https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+
+- name: install kubectl, kubelet, kubeadm
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - kubectl
+    - kubeadm
+    - kubelet
+
+- name: block in .bashrc kubectl completion
+  blockinfile:
+    path: ~/.bashrc
+    block: |
+      # [[ $PS1 && -f /usr/share/bash-completion/bash_completion ]] && \
+      #. /usr/share/bash-completion/bash_completion
+      source <(kubectl completion bash)
+
+- name: kubelet service enabled
+  service: name=kubelet enabled=yes
+
+- name: kubeadm init
+  command: kubeadm --pod-network-cidr=10.244.0.0/16 init | tee ~/kubeadm_init.log
+  register: init_scope
+  args:
+    creates: ~/kubeadm_init.log
+  ignore_errors: yes
+
+- name: set fact
+  set_fact:
+    kubeadm_init_output: "{{ init_scope.stdout_lines }}"
+
+- name: debug register vars
+  debug:
+    var: kubeadm_init_output
+  when: kubeadm_init_output is defined
+
+- name: make .kube directory
+  file:
+    state: directory
+    path: ~/.kube
+
+- name: copy config file
+  copy:
+    remote_src: yes
+    src: /etc/kubernetes/admin.conf
+    dest: ~/.kube/config
+    group: root
+    owner: root
+
+- name: create flannel network
+  command: "kubectl apply -f {{ flannel_yml }}"
+
+- name: download kubernetes example yml from github
+  git:
+    repo: 'https://github.com/kubernetes/examples.git'
+    dest: /example

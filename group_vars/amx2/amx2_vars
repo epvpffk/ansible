@@ -1,0 +1,3 @@
+---
+ansible_ssh_user: ec2-user
+v_name: amazon_linux2_test

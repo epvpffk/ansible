@@ -1,0 +1,13 @@
+---
+- name: sg create
+  ec2_group:
+    region: "{{ region }}"
+    state: present
+    name: "{{ v_name }}"
+    description: "{{ sg_desc }}"
+    tags:
+      Name: "{{ v_name }}"
+    rules:
+      - proto: tcp
+        cidr_ip: 0.0.0.0/0
+        ports: "{{ sg_ports }}"

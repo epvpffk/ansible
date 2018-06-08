@@ -1,0 +1,7 @@
+---
+v_name: k8s_master
+kubectl_version: v1.9.3
+flannel_yml: https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+service: kubernetes
+sg_desc: k8s security group
+sg_ports: 80

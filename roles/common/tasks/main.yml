@@ -1,0 +1,29 @@
+---
+- name: change autherized_key
+  copy:
+    remote_src: yes
+    dest: "/root/.ssh/authorized_keys"
+    src: "/home/{{ ansible_ssh_user }}/.ssh/authorized_keys"
+    
+- name: groupinstall dev tools via yum
+  yum: name="@Development tools" state=present update_cache=yes
+
+- name: yum install py-devel, wget, unzip
+  yum: name={{ item }} state=present
+  with_items:
+    - epel-release
+    - python-devel
+    - wget
+    - unzip
+    - bind-utils
+    - tree
+    - vim
+
+- name: yum install python2-pip
+  yum: name=python2-pip state=present
+
+- name: pip install -U pip && pip install glances
+  pip: name={{ item }} state=present extra_args=--upgrade
+  with_items:
+    - pip
+    - glances

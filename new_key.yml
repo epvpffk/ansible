@@ -1,0 +1,18 @@
+---
+# 신규 keypair 생성 후 로컬호스트에 키 추가
+# region : tokyo
+
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  vars:
+    keyname: kinesis_tokyo
+  tasks:
+    - name: create new key pair
+      ec2_key:
+        region: "{{ region }}"
+        name: "{{ keyname }}"
+      register: reg_key
+    - debug: var=reg_key
+    - name: save priv.key file
+      copy: content="{{ reg_key.key.private_key }}" dest="~/.ssh/{{ keyname }}.pem" mode=0600

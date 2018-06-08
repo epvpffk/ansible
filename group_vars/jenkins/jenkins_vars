@@ -1,0 +1,13 @@
+---
+
+sg_ports:
+  - 80
+
+sg_desc: "security group for jenkins - 80, 8080"
+
+v_name: jenkins
+jenkins_admin_username: admin
+jenkins_admin_password: admin
+
+service: mgmt
+desc: jenkins sg

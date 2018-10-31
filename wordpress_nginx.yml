@@ -7,7 +7,7 @@
   connection: local
   gather_facts: no
   vars_files:
-    - group_vars/test/test_vars
+    - group_vars/wordpress/wordpress_vars
   roles:
     - create_sg
     - prvsn_inst
@@ -15,6 +15,10 @@
   hosts: "tag_group_{{ v_name }}"
   become: yes
   vars_files:
-    - group_vars/test/test_vars
+    - group_vars/wordpress/wordpress_vars
   roles:
     - common
+    - mariadb
+    - nginx
+    - php-fpm
+    - wordpress

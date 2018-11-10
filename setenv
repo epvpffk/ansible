@@ -1,0 +1,42 @@
+# Make sure older style env vars are unset
+unset ANSIBLE_CONFIG
+unset EC2_INI_PATH
+
+# Find where we are...
+export ANSIBLE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# See if we can find out the region we're in.
+if [ -e "/usr/bin/ec2metadata" ]; then
+    region=`/usr/bin/ec2metadata --availability-zone | grep -Po "(us|sa|eu|ap)-(north|south|central)?(east|west)?-[0-9]+"`
+    if [ -z ${EC2_REGION+x} ]
+    then
+      export EC2_REGION="$region"
+    fi
+fi
+
+# ANSIBLE default configs
+export ANSIBLE_INVENTORY="$ANSIBLE_DIR/ec2_ini.py"
+export ANSIBLE_LIBRARY="$ANSIBLE_DIR/lib"
+export ANSIBLE_LOG_PATH="$ANSIBLE_DIR/log/ansible.log"
+export ANSIBLE_NOCOWS=1
+export ANSIBLE_REMOTE_TEMP="/tmp"
+export ANSIBLE_ROLES_PATH="$ANSIBLE_DIR/roles"
+export ANSIBLE_SSH_ARGS="-C -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o ControlMaster=auto -o ControlPersist=60s"
+export ANSIBLE_REMOTE_PORT=22
+export ANSIBLE_PRIVATE_KEY_FILE="$HOME/.ssh/aws_ssh_key.pem"
+
+# Plugins path
+export ANSIBLE_ACTION_PLUGINS="$ANSIBLE_DIR/plugins/action:/usr/share/ansible_plugins/action_plugins"
+export ANSIBLE_CACHE_PLUGINS="$ANSIBLE_DIR/plugins/cache:/usr/share/ansible_plugins/cache_plugins"
+export ANSIBLE_CALLBACK_PLUGINS="$ANSIBLE_DIR/plugins/callback:/usr/share/ansible_plugins/callback_plugins"
+export ANSIBLE_CONNECTION_PLUGINS="$ANSIBLE_DIR/plugins/connection:/usr/share/ansible_plugins/connection_plugins"
+export ANSIBLE_FILTER_PLUGINS="$ANSIBLE_DIR/plugins/filter:/usr/share/ansible_plugins/filter_plugins"
+export ANSIBLE_LOOKUP_PLUGINS="$ANSIBLE_DIR/plugins/lookup:/usr/share/ansible_plugins/lookup_plugins"
+export ANSIBLE_SHELL_PLUGINS="$ANSIBLE_DIR/plugins/shell:/usr/share/ansible_plugins/shell_plugins"
+export ANSIBLE_STRATEGY_PLUGINS="$ANSIBLE_DIR/plugins/strategy:/usr/share/ansible_plugins/strategy_plugins"
+export ANSIBLE_VARS_PLUGINS="$ANSIBLE_DIR/plugins/vars:/usr/share/ansible_plugins/vars_plugins"
+
+eval "cat <<EOF
+$(<${ANSIBLE_DIR}/all.tmpl)
+EOF
+" > "$ANSIBLE_DIR/group_vars/all"

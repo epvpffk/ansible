@@ -7,7 +7,7 @@
   vars:
     sg_tag_Name: Kinesis
     office_ip: "211.34.57.2/32"               #ex)192.168.0.1/32 #허용할 ip #1
-    home_ip: "119.194.174.2/32"               # "{{ }}" 떼고 IP만 넣을것
+    home_ip: "61.74.188.14/32"               # "{{ }}" 떼고 IP만 넣을것
   tasks:
     - name: create sg
       ec2_group:
@@ -28,3 +28,5 @@
             cidr_ip: 0.0.0.0/0
         tags:
           Name: "{{ sg_tag_Name }}"
+
+
